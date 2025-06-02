@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x #Turn on verbose
 ################## BindCraft installation script
 ################## specify conda/mamba folder, and installation folder for git repositories, and whether to use mamba or $pkg_manager
 # Default value for pkg_manager
@@ -63,13 +64,21 @@ echo -e "BindCraft environment activated at ${CONDA_BASE}/envs/BindCraft"
 # install required conda packages
 echo -e "Instaling conda requirements\n"
 if [ -n "$cuda" ]; then
-    CONDA_OVERRIDE_CUDA="$cuda" $pkg_manager install pip pandas matplotlib numpy"<2.0.0" biopython scipy pdbfixer seaborn libgfortran5 tqdm jupyter ffmpeg pyrosetta fsspec py3dmol chex dm-haiku flax"<0.10.0" dm-tree joblib ml-collections immutabledict optax jaxlib=*=*cuda* jax cuda-nvcc cudnn -c conda-forge -c nvidia  --channel https://conda.graylab.jhu.edu -y || { echo -e "Error: Failed to install conda packages."; exit 1; }
+    CONDA_OVERRIDE_CUDA="$cuda" $pkg_manager install \
+  pip pandas matplotlib numpy"<2.0.0" biopython scipy pdbfixer seaborn \
+  libgfortran5 tqdm jupyter ffmpeg fsspec py3dmol chex dm-haiku \
+  flax"<0.10.0" dm-tree joblib ml-collections immutabledict optax \
+  jaxlib=*=*cuda* jax cuda-nvcc cudnn \
+  -c conda-forge -c nvidia || \
+  { echo -e "Error: Failed to install conda packages."; exit 1; }
+
 else
-    $pkg_manager install pip pandas matplotlib numpy"<2.0.0" biopython scipy pdbfixer seaborn libgfortran5 tqdm jupyter ffmpeg pyrosetta fsspec py3dmol chex dm-haiku flax"<0.10.0" dm-tree joblib ml-collections immutabledict optax jaxlib jax cuda-nvcc cudnn -c conda-forge -c nvidia  --channel https://conda.graylab.jhu.edu -y || { echo -e "Error: Failed to install conda packages."; exit 1; }
+    $pkg_manager install pip pandas matplotlib numpy"<2.0.0" biopython scipy pdbfixer seaborn libgfortran5 tqdm jupyter ffmpeg fsspec py3dmol chex dm-haiku flax"<0.10.0" dm-tree joblib ml-collections immutabledict optax jaxlib jax cuda-nvcc cudnn -c conda-forge -c nvidia -y || { echo -e "Error: Failed to install conda packages."; exit 1; }
+
 fi
 
 # make sure all required packages were installed
-required_packages=(pip pandas libgfortran5 matplotlib numpy biopython scipy pdbfixer seaborn tqdm jupyter ffmpeg pyrosetta fsspec py3dmol chex dm-haiku dm-tree joblib ml-collections immutabledict optax jaxlib jax cuda-nvcc cudnn)
+required_packages=(pip pandas libgfortran5 matplotlib numpy biopython scipy pdbfixer seaborn tqdm jupyter ffmpeg fsspec py3dmol chex dm-haiku dm-tree joblib ml-collections immutabledict optax jaxlib jax cuda-nvcc cudnn)
 missing_packages=()
 
 # Check each package
@@ -129,3 +138,5 @@ echo -e "Successfully finished BindCraft installation!\n"
 echo -e "Activate environment using command: \"$pkg_manager activate BindCraft\""
 echo -e "\n"
 echo -e "Installation took $(($t / 3600)) hours, $((($t / 60) % 60)) minutes and $(($t % 60)) seconds."
+
+set +x #Turn off verbose
